@@ -107,8 +107,12 @@ func (handler *MsgEventHandler) HandleEvent(eventLoad *[]byte)  {
 	}
 
 	//封装返回的结果
-	answer.AnswerMsg(&msg.ChannelID, *result, 
+	err = answer.AnswerMsg(&msg.ChannelID, *result, 
 		&msg.MsgReference.MessageId, &robotdata.GetRobotData().AuthKey)
+	if err != nil {
+		errs := "请求GTP超时，请重试"
+		answer.PushMsg(&msg.ChannelID, errs, &robotdata.GetRobotData().AuthKey)
+	}
 }
 
 func (handler *MsgEventHandler) getMsg(content *[]byte) (router.Message, error){
