@@ -26,6 +26,8 @@ const(
 	PUBLIC_GUILD_MESSAGES int = 1 << 30
 )
 
+var Connections chan bool
+
 //websocket所有报文的统一结构
 type EventPayLoad struct {
 	Op OpCode 			`json:"op"` 		//opcode,用于区分操作类型

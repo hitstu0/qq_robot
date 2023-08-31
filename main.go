@@ -5,7 +5,7 @@ import (
 	"robot/base/gpt_base"
 	"robot/base/log"
 	robotdata "robot/base/robot_data"
-	"robot/base/router"
+	r "robot/base/router"
 	"robot/base/router/events"
 )
 //修复故障恢复
@@ -13,9 +13,20 @@ func main() {
     initRobot()
     initGPT()
 
+    
     handlers := initHandlers()
-    router := router.NewDefaultRouter(handlers)
+    router := r.NewDefaultRouter(handlers)
+    go startRobot(router)
 
+    r.Connections = make(chan bool)
+    for range r.Connections {
+        log.Info.Println("重新连接")
+        go startRobot(router)
+    }
+
+}
+
+func startRobot(router *r.Router) {
     err := router.Connect()
     if err != nil{
         log.Info.Println(err.Error())
@@ -41,17 +52,21 @@ func initGPT() {
 }
 
 //配置程序监听的事件
-func initHandlers() *[]router.EventHandler{
-    handlers := []router.EventHandler {
+func initHandlers() *[]r.EventHandler{
+    handlers := []r.EventHandler {
         &events.MsgEventHandler {
-            OpCode: router.Dispatch,
-            EventItent: router.PUBLIC_GUILD_MESSAGES,
-            EventKey: router.MsgCreateKey,
+            OpCode: r.Dispatch,
+            EventItent: r.PUBLIC_GUILD_MESSAGES,
+            EventKey: r.MsgCreateKey,
         },
 
         &events.HeartBeatEventHandler {
-            OpCode: router.HeartbeatACK,
-            EventItent: router.PUBLIC_GUILD_MESSAGES,
+            OpCode: r.HeartbeatACK,
+            EventItent: r.PUBLIC_GUILD_MESSAGES,
+        },
+
+        &events.ReconnectEventHandler{
+            OpCode: r.Reconnect,
         },
     }
 
