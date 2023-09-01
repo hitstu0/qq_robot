@@ -13,7 +13,7 @@ import (
 
 const(
 	//oglejimneto@mail.com----kXwqKbxteo----O3wTLO528----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
-	authKey = "Bearer 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"
+	authKey = "Bearer xxxxxxxxxxxxxxx"
 	model = "gpt-3.5-turbo"
 	gptUrl = "https://api.openai.com/v1/chat/completions"
 	temperature = 0.7

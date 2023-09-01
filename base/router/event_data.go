@@ -27,6 +27,7 @@ const(
 )
 
 var Connections chan bool
+var HeartBeatExit chan bool
 
 //websocket所有报文的统一结构
 type EventPayLoad struct {

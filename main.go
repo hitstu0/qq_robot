@@ -19,6 +19,7 @@ func main() {
     go startRobot(router)
 
     r.Connections = make(chan bool)
+    r.HeartBeatExit = make(chan bool)
     for range r.Connections {
         log.Info.Println("重新连接")
         go startRobot(router)

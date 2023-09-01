@@ -95,7 +95,11 @@ func (router *Router) ListenAndRouteEvent() {
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Error.Println("远程连接已关闭 " + err.Error())
-				return
+
+				Connections <- true
+				HeartBeatExit <- true
+
+				break
 			} else {
 				log.Error.Println("获取事件错误： " + err.Error())
 				continue
@@ -120,7 +124,6 @@ func (router *Router) ListenAndRouteEvent() {
 		if eventHandler == nil {
 			continue
 		}
-
 		
 		go eventHandler.HandleEvent(&msg)
 	}
@@ -279,28 +282,36 @@ func (router *Router) sendResumeInfo() error{
 
 func (router *Router) startHeartBeat() {
 	for {
-		conn := router.connection
-		
-		heartBeatLoad := &EventPayLoad{
-			Op: Heartbeat,
-			D:  router.lastestS,
+		select {
+		case <- HeartBeatExit :{
+			log.Info.Printf("心跳退出")
+			break
 		}
 
-		heartBeatLoadJson, err := json.Marshal(heartBeatLoad)
-		if err != nil {
-			log.Error.Println("序列化心跳包错误： " + err.Error())
-			router.sleepToRetry()
-			continue
-		}
+		default :
+			conn := router.connection
+			
+			heartBeatLoad := &EventPayLoad{
+				Op: Heartbeat,
+				D:  router.lastestS,
+			}
 
-		err = conn.WriteMessage(websocket.TextMessage, heartBeatLoadJson)
-		if err != nil {
-			log.Error.Println("发送认证信息错误: " + err.Error())
-			router.sleepToRetry()
-			continue
-		}
+			heartBeatLoadJson, err := json.Marshal(heartBeatLoad)
+			if err != nil {
+				log.Error.Println("序列化心跳包错误： " + err.Error())
+				router.sleepToRetry()
+				continue
+			}
 
-		time.Sleep(time.Duration(router.heartBeat) * time.Millisecond)
+			err = conn.WriteMessage(websocket.TextMessage, heartBeatLoadJson)
+			if err != nil {
+				log.Error.Println("发送认证信息错误: " + err.Error())
+				router.sleepToRetry()
+				continue
+			}
+
+			time.Sleep(time.Duration(router.heartBeat) * time.Millisecond)
+		}
 	}
 }
 
