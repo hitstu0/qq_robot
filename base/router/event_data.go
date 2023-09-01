@@ -1,6 +1,9 @@
 package router
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 //OpCode
 type OpCode int32
@@ -28,6 +31,7 @@ const(
 
 var Connections chan bool
 var HeartBeatExit chan bool
+var Wg sync.WaitGroup
 
 //websocket所有报文的统一结构
 type EventPayLoad struct {

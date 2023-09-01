@@ -281,6 +281,8 @@ func (router *Router) sendResumeInfo() error{
 }
 
 func (router *Router) startHeartBeat() {
+	defer Wg.Done()
+	
 	for {
 		select {
 		case <- HeartBeatExit :{
@@ -288,7 +290,7 @@ func (router *Router) startHeartBeat() {
 			break
 		}
 
-		default :
+		default:
 			conn := router.connection
 			
 			heartBeatLoad := &EventPayLoad{
@@ -313,6 +315,8 @@ func (router *Router) startHeartBeat() {
 			time.Sleep(time.Duration(router.heartBeat) * time.Millisecond)
 		}
 	}
+
+	
 }
 
 func (router *Router) sleepToRetry () {
