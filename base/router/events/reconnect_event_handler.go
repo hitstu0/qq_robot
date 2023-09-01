@@ -22,6 +22,5 @@ func (handler *ReconnectEventHandler) GetOpCode() router.OpCode {
 }
 
 func (handler *ReconnectEventHandler) HandleEvent(content *[]byte)  {
-	router.Connections <- true
-	router.HeartBeatExit <- true
+	router.SendReconnectSignal()
 }

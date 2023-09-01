@@ -22,7 +22,7 @@ func main() {
     r.HeartBeatExit = make(chan bool)
     for range r.Connections {
         log.Info.Println("重新连接")
-        r.Wg.Wait()
+        r.PreReconnect()
         go startRobot(router)
     }
 

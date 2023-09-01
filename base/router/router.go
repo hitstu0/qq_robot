@@ -87,18 +87,17 @@ func (router *Router) Connect() error {
 }
 
 func (router *Router) ListenAndRouteEvent() {
-	log.Info.Println("开始监听事件")
+	defer Wg.Done()
+	Wg.Add(1)
 
+	log.Info.Println("开始监听事件")
 	conn := router.connection
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Error.Println("远程连接已关闭 " + err.Error())
-
-				Connections <- true
-				HeartBeatExit <- true
-
+				SendReconnectSignal()
 				break
 			} else {
 				log.Error.Println("获取事件错误： " + err.Error())
@@ -282,6 +281,7 @@ func (router *Router) sendResumeInfo() error{
 
 func (router *Router) startHeartBeat() {
 	defer Wg.Done()
+	Wg.Add(1)
 	
 	for {
 		select {
